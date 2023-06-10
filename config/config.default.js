@@ -21,6 +21,7 @@ module.exports = appInfo => {
   // add your user config here
   const userConfig = {
     // myAppName: 'egg',
+    uploadDir: 'app/public/upload',
   };
 
   config.security = {
@@ -37,6 +38,16 @@ module.exports = appInfo => {
 
   config.jwt = {
     secret: 'ViGil',
+  };
+
+  config.multipart = {
+    mode: 'file',
+  };
+
+  config.cors = {
+    origin: '*',
+    credentials: true,
+    allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
   };
 
   exports.mysql = {
