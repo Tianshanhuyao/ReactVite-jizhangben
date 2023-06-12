@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Icon, Pull } from 'zarm'
 import dayjs from 'dayjs'
 import BillItem from '@/components/BillItem'
 import { get, REFRESH_STATE, LOAD_STATE } from '@/utils' // Pull 组件需要的一些常量
+import PopupType from '@/components/PopupType'
 
 import s from './style.module.less'
 
@@ -13,10 +14,8 @@ const Home = () => {
   const [totalPage, setTotalPage] = useState(0); // 分页总数
   const [refreshing, setRefreshing] = useState(REFRESH_STATE.normal); // 下拉刷新状态
   const [loading, setLoading] = useState(LOAD_STATE.normal); // 上拉加载状态
-
-  useEffect(() => {
-    getBillList() // 初始化
-  }, [page])
+  const typeRef = useRef()
+  const [currentSelect, setCurrentSelect] = useState({})
 
   // 获取账单方法
   const getBillList = async () => {
@@ -32,6 +31,10 @@ const Home = () => {
     setLoading(LOAD_STATE.success);
     setRefreshing(REFRESH_STATE.success);
   }
+
+  useEffect(() => {
+    getBillList() // 初始化
+  }, [page, currentSelect])
 
   // 请求列表数据
   const refreshData = () => {
@@ -50,6 +53,17 @@ const Home = () => {
     }
   }
 
+  // 弹窗
+  const toggle = () => {   
+    typeRef.current && typeRef.current.show()
+  }
+
+  const select = item => {
+    setRefreshing(REFRESH_STATE.loading)
+    setPage(1)
+    setCurrentSelect(item)
+  }
+
   return <div className={s.home}>
     <div className={s.header}>
       <div className={s.dataWrap}>
@@ -57,11 +71,11 @@ const Home = () => {
         <span className={s.income}>总收入：<b>¥ 500</b></span>
       </div>
       <div className={s.typeWrap}>
-        <div className={s.left}>
-          <span className={s.title}>类型 <Icon className={s.arrow} type="arrow-bottom" /></span>
+        <div className={s.left} onClick={toggle}>
+          <span className={s.title}>{ currentSelect.name || '全部类型' } <Icon className={s.arrow} type="arrow-bottom" /></span>
         </div>
         <div className={s.right}>
-          <span className={s.time}>2022-06<Icon className={s.arrow} type="arrow-bottom" /></span>
+          <span className={s.time}>2023-06<Icon className={s.arrow} type="arrow-bottom" /></span>
         </div>
       </div>
     </div>
@@ -89,6 +103,7 @@ const Home = () => {
         </Pull> : null
       }
     </div>
+    <PopupType ref={typeRef} onSelect={select} />
   </div>
 }
 
