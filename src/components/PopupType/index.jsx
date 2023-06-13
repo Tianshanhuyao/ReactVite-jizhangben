@@ -19,6 +19,7 @@ const PopupType = forwardRef(({ onSelect, mode = 'date' }, ref) => {
         ref.current = {
             // 外部可以通过 ref.current.show 来控制组件的显示
             show: () => {
+                console.log(123);
                 setShow(true);
             },
             // 外部可以通过 ref.current.close 来控制组件的显示
