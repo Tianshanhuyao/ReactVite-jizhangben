@@ -53,8 +53,8 @@ class Billcontroller extends Controller {
   async list() {
     const { ctx, app } = this;
     // 获取，日期 date，分页数据，类型 type_id，这些都是我们在前端传给后端的数据
-    const { date, page = 1, page_size = 5, type_id = 'all' } = ctx.query;
-
+    let { date, page = 1, page_size = 5, type_id } = ctx.query;
+    date = moment(date).format('YYYY-MM');
     try {
       // 通过 token 解析，拿到 user_id
       const token = ctx.request.header.authorization;
@@ -67,8 +67,9 @@ class Billcontroller extends Controller {
       const _list = list.filter(item => {
         if (type_id !== 'all') {
           return (
-            moment(Number(item.date)).format('YYYY-MM') === date &&
-                        type_id === item.type_id
+            moment(Number(item.date)).format('YYYY-MM') ===
+           date &&
+              type_id === `${item.type_id}`
           );
         }
         return moment(Number(item.date)).format('YYYY-MM') === date;
