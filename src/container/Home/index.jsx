@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import BillItem from '@/components/BillItem'
 import { get, REFRESH_STATE, LOAD_STATE } from '@/utils' // Pull 组件需要的一些常量
 import PopupType from '@/components/PopupType'
-
+import PopupDate from '@/components/PopupDate'
 import s from './style.module.less'
 
 const Home = () => {
@@ -15,26 +15,43 @@ const Home = () => {
   const [refreshing, setRefreshing] = useState(REFRESH_STATE.normal); // 下拉刷新状态
   const [loading, setLoading] = useState(LOAD_STATE.normal); // 上拉加载状态
   const typeRef = useRef()
+  const monthRef = useRef()
   const [currentSelect, setCurrentSelect] = useState({})
+  const [totalExpense, setTotalExpense] = useState(0) // 总支出
+  const [totalIncome, setTotalIncome] = useState(0) // 总收入
 
   // 获取账单方法
   const getBillList = async () => {
-    const { data } = await get(`/api/bill/list?page=${page}&page_size=5&date=${currentTime}`);
+    const { data } = await get(
+      `/api/bill/list?page=${page}&page_size=5&date=${currentTime}
+      &type_id=${currentSelect.id || 'all'}`);
     // 下拉刷新，重制数据
     if (page == 1) {
       setList(data.list);
     } else {
       setList(list.concat(data.list));
     }
+    setTotalExpense(data.totalExpense.toFixed(2));
+    setTotalIncome(data.totalIncome.toFixed(2));
     setTotalPage(data.totalPage);
     // 上滑加载状态
     setLoading(LOAD_STATE.success);
     setRefreshing(REFRESH_STATE.success);
   }
 
+  const monthToggle = () => {
+    monthRef.current && monthRef.current.show()
+  }
+
+  const selectMonth = item => {
+    setRefreshing(REFRESH_STATE.loading)
+    setPage(1)
+    setCurrentTime(item)
+  }
+
   useEffect(() => {
     getBillList() // 初始化
-  }, [page, currentSelect])
+  }, [page, currentSelect, currentTime])
 
   // 请求列表数据
   const refreshData = () => {
@@ -67,15 +84,15 @@ const Home = () => {
   return <div className={s.home}>
     <div className={s.header}>
       <div className={s.dataWrap}>
-        <span className={s.expense}>总支出：<b>¥ 200</b></span>
-        <span className={s.income}>总收入：<b>¥ 500</b></span>
+        <span className={s.expense}>总支出：<b>¥ { totalExpense }</b></span>
+        <span className={s.income}>总收入：<b>¥ { totalIncome }</b></span>
       </div>
       <div className={s.typeWrap}>
         <div className={s.left} onClick={toggle}>
           <span className={s.title}>{ currentSelect.name || '全部类型' } <Icon className={s.arrow} type="arrow-bottom" /></span>
         </div>
         <div className={s.right}>
-          <span className={s.time}>2023-06<Icon className={s.arrow} type="arrow-bottom" /></span>
+          <span className={s.time} onClick={monthToggle}>{ currentTime }<Icon className={s.arrow} type="arrow-bottom" /></span>
         </div>
       </div>
     </div>
@@ -104,6 +121,7 @@ const Home = () => {
       }
     </div>
     <PopupType ref={typeRef} onSelect={select} />
+    <PopupDate ref={monthRef} onSelect={selectMonth} />
   </div>
 }
 
